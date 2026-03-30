@@ -1,0 +1,20 @@
+Source: truenas-directoryservices
+Section: contrib/python
+Priority: optional
+Maintainer: TrueNAS Engineering <dev@truenas.com>
+Build-Depends: debhelper-compat (= 12),
+               dh-python,
+               libkrb5-dev,
+               pybuild-plugin-pyproject,
+               python3-all-dev,
+               python3-setuptools
+Standards-Version: 4.4.1
+Homepage: https://github.com/truenas/truenas_pydirectoryservices
+
+Package: python3-truenas-directoryservices
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}
+Description: TrueNAS directory services libraries
+ CPython extensions and utilities for TrueNAS directory services integration.
+ Includes truenas_pynss (NSS lookups), truenas_pykrb5 (Kerberos 5 bindings),
+ and truenas_krb5conf_pyutils (krb5.conf generation).

@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+import base64
+import pytest
+import os
+
+import truenas_pykrb5
+
+# Sample ccache from tests/test_ccache.py
+SAMPLE_CCACHE = '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'  # noqa
+CCACHE_NAME = 'test_ccache'
+
+
+@pytest.fixture(scope="function")
+def kerberos_data_dir(tmpdir):
+    with open(os.path.join(tmpdir, CCACHE_NAME), 'wb') as f:
+        f.write(base64.b64decode(SAMPLE_CCACHE))
+        f.flush()
+    return tmpdir
+
+
+def test_ccache_creation(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    assert ccache is not None
+
+
+def test_ccache_name_property(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    name = ccache.name
+    assert isinstance(name, str)
+    assert len(name) > 0
+
+
+def test_credential_iteration(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    credentials = list(ccache.iter_credentials())
+    assert len(credentials) > 0
+
+
+def test_credential_principals(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    client_principal = cred.client_principal
+    server_principal = cred.server_principal
+
+    assert isinstance(client_principal, str)
+    assert isinstance(server_principal, str)
+    assert len(client_principal) > 0
+    assert len(server_principal) > 0
+
+
+def test_credential_timestamps(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    authtime = cred.authtime
+    starttime = cred.starttime
+    endtime = cred.endtime
+    renew_till = cred.renew_till
+
+    assert authtime is not None
+    assert starttime is not None
+    assert endtime is not None
+    assert renew_till is not None
+
+
+def test_credential_is_skey(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    is_skey = cred.is_skey
+    assert isinstance(is_skey, bool)
+
+
+def test_credential_addresses(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    addresses = cred.addresses
+    assert isinstance(addresses, tuple)
+
+    for addr in addresses:
+        assert hasattr(addr, 'addrtype')
+        assert hasattr(addr, 'contents')
+
+
+def test_credential_keyblock(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    keyblock = cred.keyblock
+    assert hasattr(keyblock, 'enctype')
+    assert hasattr(keyblock, 'contents')
+    assert hasattr(keyblock, 'deprecated')
+
+
+def test_credential_ticket_flags(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    flags = cred.ticket_flags
+    assert flags is not None
+    assert hasattr(flags, '__int__')
+
+
+def test_credential_authdata(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    authdata = cred.authdata
+    assert isinstance(authdata, tuple)
+
+    for ad in authdata:
+        assert hasattr(ad, 'ad_type')
+        assert hasattr(ad, 'contents')
+        assert isinstance(ad.ad_type, int)
+
+
+def test_module_enums_available():
+    assert hasattr(truenas_pykrb5, 'KRB5TktFlags')
+    assert hasattr(truenas_pykrb5, 'KRB5EncType')
+    assert hasattr(truenas_pykrb5, 'KRB5PrincipalType')
+    assert hasattr(truenas_pykrb5, 'KRB5ErrCode')
+
+
+def test_ticket_flags_enum_values():
+    forwardable = truenas_pykrb5.KRB5TktFlags.FORWARDABLE
+    renewable = truenas_pykrb5.KRB5TktFlags.RENEWABLE
+
+    assert isinstance(int(forwardable), int)
+    assert isinstance(int(renewable), int)
+    assert int(forwardable) == 0x40000000
+    assert int(renewable) == 0x00800000
+
+
+def test_ticket_flags_bitwise_operations(kerberos_data_dir):
+    ccache_path = os.path.join(kerberos_data_dir, CCACHE_NAME)
+    ccache = truenas_pykrb5.get_ccache(ccache_name=f'FILE:{ccache_path}')
+    cred = next(ccache.iter_credentials())
+
+    flags = cred.ticket_flags
+    forwardable = truenas_pykrb5.KRB5TktFlags.FORWARDABLE
+
+    has_forwardable = bool(flags & forwardable)
+    assert isinstance(has_forwardable, bool)

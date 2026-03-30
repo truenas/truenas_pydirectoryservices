@@ -1,0 +1,4 @@
+truenas_pynss.GroupResult.__match_args__
+truenas_pynss.GroupResult.__replace__
+truenas_pynss.PasswdResult.__match_args__
+truenas_pynss.PasswdResult.__replace__

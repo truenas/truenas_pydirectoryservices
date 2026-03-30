@@ -1,0 +1,3 @@
+# Struct sequence __match_args__ / __replace__ not in stubs
+truenas_pykrb5\..*\.__match_args__
+truenas_pykrb5\..*\.__replace__
