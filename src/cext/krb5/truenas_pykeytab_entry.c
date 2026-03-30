@@ -265,6 +265,12 @@ create_keytab_entry(py_tnkt_t *keytab, krb5_keytab_entry *entry)
 	/* Initialize datetime object for timestamp */
 	entry_obj->timestamp = timestamp_to_datetime((PyObject *)keytab->mod_ref, entry->timestamp);
 	if (entry_obj->timestamp == NULL) {
+		/*
+		 * Zero the shallow-copied entry before releasing the object so that
+		 * tnkt_entry_dealloc does not free the heap-allocated fields that
+		 * are still owned by the caller.
+		 */
+		memset(&entry_obj->entry, 0, sizeof(entry_obj->entry));
 		Py_DECREF(entry_obj);
 		return NULL;
 	}

@@ -330,6 +330,12 @@ create_ccache_cred(py_tncc_t *ccache, krb5_creds *creds)
 	return creds_obj;
 
 error:
+	/*
+	 * Zero the shallow-copied creds before releasing the object so that
+	 * tncc_creds_dealloc does not free the heap-allocated fields (principal
+	 * strings, key material, etc.) that are still owned by the caller.
+	 */
+	memset(&creds_obj->creds, 0, sizeof(creds_obj->creds));
 	Py_DECREF(creds_obj);
 	return NULL;
 }
