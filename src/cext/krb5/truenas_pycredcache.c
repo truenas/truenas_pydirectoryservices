@@ -24,13 +24,14 @@ int
 tncc_init(py_tncc_t *self, PyObject *args, PyObject *kwds)
 {
 	char *ccache_name = NULL;
+	const char *config_file = NULL;
 	krb5_error_code ret;
 	tnkrb5_error_t error;
 	char ccache_name_buf[MAX_KEYTAB_NAME_LEN];
 
-	static char *kwlist[] = {"ccache_name", NULL};
+	static char *kwlist[] = {"ccache_name", "config_file", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &ccache_name))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sz", kwlist, &ccache_name, &config_file))
 		return -1;
 
 	if (pthread_mutex_init(&self->ctx_mutex, NULL) != 0) {
@@ -39,7 +40,7 @@ tncc_init(py_tncc_t *self, PyObject *args, PyObject *kwds)
 	}
 
 	Py_BEGIN_ALLOW_THREADS
-	ret = krb5_init_context(&self->context);
+	ret = init_context_with_config(config_file, &self->context);
 	if (ret == 0) {
 		if (ccache_name) {
 			ret = krb5_cc_resolve(self->context, ccache_name, &self->ccache);

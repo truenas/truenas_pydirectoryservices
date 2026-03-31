@@ -73,7 +73,8 @@ truenas_pykrb5_get_init_creds_keytab(PyObject *mod, PyObject *args,
 	const char *principal_str = NULL;
 	const char *keytab_path = NULL;
 	const char *ccache_name = NULL;
-	static char *kwlist[] = {"principal", "keytab", "ccache_name", NULL};
+	const char *config_file = NULL;
+	static char *kwlist[] = {"principal", "keytab", "ccache_name", "config_file", NULL};
 
 	krb5_context ctx = NULL;
 	krb5_principal client = NULL;
@@ -88,9 +89,9 @@ truenas_pykrb5_get_init_creds_keytab(PyObject *mod, PyObject *args,
 
 	memset(&creds, 0, sizeof(creds));
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|$szz", kwlist,
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|$szzz", kwlist,
 	                                 &principal_str, &keytab_path,
-	                                 &ccache_name))
+	                                 &ccache_name, &config_file))
 		return NULL;
 
 	if (principal_str == NULL) {
@@ -108,7 +109,7 @@ truenas_pykrb5_get_init_creds_keytab(PyObject *mod, PyObject *args,
 
 	Py_BEGIN_ALLOW_THREADS
 
-	ret = krb5_init_context(&ctx);
+	ret = init_context_with_config(config_file, &ctx);
 	if (ret)
 		goto krb5_done;
 
@@ -209,7 +210,8 @@ truenas_pykrb5_get_init_creds_password(PyObject *mod, PyObject *args,
 	const char *principal_str = NULL;
 	const char *password = NULL;
 	const char *ccache_name = NULL;
-	static char *kwlist[] = {"principal", "password", "ccache_name", NULL};
+	const char *config_file = NULL;
+	static char *kwlist[] = {"principal", "password", "ccache_name", "config_file", NULL};
 
 	krb5_context ctx = NULL;
 	krb5_principal client = NULL;
@@ -223,9 +225,9 @@ truenas_pykrb5_get_init_creds_password(PyObject *mod, PyObject *args,
 
 	memset(&creds, 0, sizeof(creds));
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|$szz", kwlist,
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|$szzz", kwlist,
 	                                 &principal_str, &password,
-	                                 &ccache_name))
+	                                 &ccache_name, &config_file))
 		return NULL;
 
 	if (principal_str == NULL || password == NULL) {
@@ -243,7 +245,7 @@ truenas_pykrb5_get_init_creds_password(PyObject *mod, PyObject *args,
 
 	Py_BEGIN_ALLOW_THREADS
 
-	ret = krb5_init_context(&ctx);
+	ret = init_context_with_config(config_file, &ctx);
 	if (ret)
 		goto krb5_done;
 

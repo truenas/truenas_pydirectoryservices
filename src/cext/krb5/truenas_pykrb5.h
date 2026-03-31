@@ -13,6 +13,7 @@
 #include <Python.h>
 #include <pthread.h>
 #include <krb5.h>
+#include <profile.h>
 #include "krb5_err_table.h"
 #include "krb5_enctype_table.h"
 #include "krb5_principal_table.h"
@@ -108,6 +109,31 @@ extern PyTypeObject TruenasKeytabIterType;
 extern PyTypeObject TruenasCcacheType;
 extern PyTypeObject TruenasCcacheCredType;
 extern PyTypeObject TruenasCcacheIterType;
+
+/*
+ * Initialize a krb5 context using an explicit config file path, or the
+ * default config if config_file is NULL.  On success, *ctx_out is set and
+ * the profile is already embedded in the context (the temporary profile_t is
+ * released before returning).
+ */
+static inline krb5_error_code
+init_context_with_config(const char *config_file, krb5_context *ctx_out)
+{
+	if (config_file == NULL)
+		return krb5_init_context(ctx_out);
+
+	const char *files[] = { config_file, NULL };
+	profile_t profile = NULL;
+	krb5_error_code ret;
+
+	ret = profile_init_flags(files, PROFILE_INIT_ALLOW_MODULE, &profile);
+	if (ret)
+		return ret;
+
+	ret = krb5_init_context_profile(profile, 0, ctx_out);
+	profile_release(profile);
+	return ret;
+}
 
 /* Prevents direct instantiation of internal types */
 PyObject *py_no_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
