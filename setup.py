@@ -46,5 +46,6 @@ setup(
     package_data={
         'truenas_pynss': ['*.pyi', 'py.typed'],
         'truenas_pykrb5': ['*.pyi', 'py.typed'],
+        'truenas_krb5conf_pyutils': ['py.typed'],
     },
 )

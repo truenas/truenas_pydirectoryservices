@@ -69,7 +69,7 @@ def validate_krb5_parameter(section: KRB5ConfSection, param: str, value: object)
 
 def parse_krb_aux_params(
     section: KRB5ConfSection,
-    section_conf: dict,
+    section_conf: dict[str, object],
     aux_params: str
 ) -> None:
     """Parse auxiliary parameters and merge them into section_conf."""
@@ -89,8 +89,9 @@ def parse_krb_aux_params(
         if entry[-1].strip() == KRB5_VALUE_BEGIN:
             if is_subsection:
                 raise ValueError('Invalid nesting of parameters')
-            section_conf[param] = {}
-            target = section_conf[param]
+            sub: dict[str, object] = {}
+            section_conf[param] = sub
+            target = sub
             is_subsection = True
             continue
 
@@ -115,7 +116,7 @@ class KRB5Conf:
     def _add_parameters(
         self,
         section: KRB5ConfSection,
-        config: dict,
+        config: dict[str, object],
         auxiliary_parameters: str | None = None
     ) -> None:
         for param, value in config.items():
@@ -136,7 +137,7 @@ class KRB5Conf:
 
     def add_libdefaults(
         self,
-        config: dict,
+        config: dict[str, object],
         auxiliary_parameters: str | None = None
     ) -> None:
         """Add configuration for the [libdefaults] section."""
@@ -144,7 +145,7 @@ class KRB5Conf:
 
     def add_appdefaults(
         self,
-        config: dict,
+        config: dict[str, object],
         auxiliary_parameters: str | None = None
     ) -> None:
         """Add configuration for the [appdefaults] section."""
@@ -180,13 +181,13 @@ class KRB5Conf:
     def _generate_libdefaults(self) -> str:
         kconf = "[libdefaults]\n"
         for parm, value in self.libdefaults.items():
-            kconf += self._dump_parameter(parm, value)
+            kconf += self._dump_parameter(parm, value) or ''
         return kconf + '\n'
 
     def _generate_appdefaults(self) -> str:
         kconf = "[appdefaults]\n"
         for parm, value in self.appdefaults.items():
-            kconf += self._dump_parameter(parm, value)
+            kconf += self._dump_parameter(parm, value) or ''
         return kconf + '\n'
 
     def _generate_realms(self) -> str:
@@ -198,7 +199,7 @@ class KRB5Conf:
             realm_data['admin_server'] = [format_server(s) for s in r.admin_server]
             realm_data['kdc'] = [format_server(s) for s in r.kdc]
             realm_data['kpasswd_server'] = [format_server(s) for s in r.kpasswd_server]
-            kconf += self._dump_parameter(r.realm, realm_data)
+            kconf += self._dump_parameter(r.realm, realm_data) or ''
         return kconf + '\n'
 
     def _generate_domain_realms(self) -> str:
